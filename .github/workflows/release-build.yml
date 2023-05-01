@@ -1,0 +1,55 @@
+name: Check Version & Build Releases
+
+on:
+  watch:
+    types: started
+  schedule:
+    - cron: 0 0 * * 1
+
+jobs:
+  build:
+    name: Unbound Static
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+      with:
+        fetch-depth: 0
+
+    - name: Get current tags
+      id: previoustag
+      uses: WyriHaximus/github-action-get-previous-tag@v1
+      with:
+        fallback: 0
+
+    - name: Check & Build Unbound
+      id: build_release
+      run: |
+        bash build.sh ${{ steps.previoustag.outputs.tag }}
+        if [ -f ./new_version ]; then
+            echo 'unbound_version<<EOF' >> $GITHUB_ENV
+            cat ./new_version >> $GITHUB_ENV
+            echo 'EOF' >> $GITHUB_ENV
+            echo "new_version=true" >> $GITHUB_ENV
+        fi
+
+    - name: Upload artifacts
+      if: env.new_version == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: unbound-static-${{ env.unbound_version }}
+        path: build_out/*
+
+    - name: Create release
+      if: env.new_version == 'true'
+      id: create_release
+      uses: ncipollo/release-action@v1
+      with:
+        name: unbound-${{ env.unbound_version }}
+        allowUpdates: true
+        tag: ${{ env.unbound_version }}
+        commit: master
+        replacesArtifacts: true
+        token: ${{ secrets.workflow_token }}
+        artifacts: build_out/*
