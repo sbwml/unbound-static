@@ -168,13 +168,14 @@ cd $TOP/unbound-*
 make clean >/dev/null 2>&1
 ./configure \
   --prefix=$INSTALL_DIR/unbound \
+  --with-username="" \
+  --with-chroot-dir="" \
+  --with-run-dir="" \
   --disable-shared \
   --disable-rpath \
   --enable-tfo-client \
   --enable-tfo-server \
-  --enable-static-exe \
   --enable-fully-static \
-  --enable-static \
   --enable-pie \
   --enable-subnet \
   --enable-dnscrypt \
