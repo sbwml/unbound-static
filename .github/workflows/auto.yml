@@ -1,12 +1,11 @@
-name: Build Releases
+name: Auto Build
 
 on:
-  watch:
-    types: started
+  schedule:
+    - cron: 0 8 * * 1
 
 jobs:
   build:
-    if: github.event.repository.owner.id == github.event.sender.id
     name: Unbound Static
     runs-on: ubuntu-latest
 
